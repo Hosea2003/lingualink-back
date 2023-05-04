@@ -47,7 +47,7 @@ class LinguaUser(AbstractUser):
         default=GenderChoice.MALE
     )
 
-    objects = LinguaUserManager
+    objects = LinguaUserManager()
 
     class Meta:
         db_table = 'LINGUA_USER'
