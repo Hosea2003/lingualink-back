@@ -5,6 +5,7 @@ from datetime import date
 
 
 class LinguaUserManager(UserManager):
+    use_in_migrations = True
     def create_user(self, username, email=None, password=None, **extra_fields):
         if not email:
             raise ValueError("Please provide email")
@@ -25,12 +26,8 @@ class LinguaUserManager(UserManager):
     def create_superuser(self, username, email=None, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_admin", True)
-        birthdate = extra_fields.pop("birthdate", None)
+        extra_fields.setdefault("birthdate", date.today())
         user = self.create_user(username, email, password, **extra_fields)
-        if birthdate is None:
-            user.birthdate = date.now()
-            user.save()
 
         return user
 
@@ -53,7 +50,3 @@ class LinguaUser(AbstractUser):
         db_table = 'LINGUA_USER'
         db_table_comment = 'user used for lingualink app'
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.set_password(self.password)
-        super().save(*args, **kwargs)
