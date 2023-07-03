@@ -13,7 +13,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-AUTH_USER_MODEL="mod_user.LinguaUser"
+AUTH_USER_MODEL = "mod_user.LinguaUser"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -29,8 +29,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mod_user'
+    'mod_user',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+
+SITE_ID=2
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -116,6 +127,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTHENTICATION_BACKENDS =[
-    "mod_user.backend.LinguaBaseBackend"
+AUTHENTICATION_BACKENDS = [
+    "mod_user.backend.LinguaBaseBackend",
+    "allauth.account.auth_backends.AuthenticationBackend"
 ]
+
+from datetime import timedelta
+
+VALIDATION_CODE_EXPIRATION = timedelta(hours=24)
