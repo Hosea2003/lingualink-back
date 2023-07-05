@@ -79,21 +79,21 @@ def get_validation_code(request: Request):
     return Response({"message": "validation code sent"}, status=status.HTTP_200_OK)
 
 
-@api_view(["POST"])
-def obtain_token(request: Request):
-    data = request.data
-    serializer = AuthSerializer(data=data)
-    if not serializer.is_valid():
-        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
-
-    user = authenticate(username=data.get("username"), password=data.get("password"))
-
-    if not user:
-        return Response({"errors": "Unable to log in with provided credentials"}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not user.account_verified:
-        return Response({"errors":"Account not verified, enter your validation code"}, status=status.HTTP_403_FORBIDDEN)
-
-    token = Token.objects.create(user=user)
-
-    return Response({"token":token.key})
+# @api_view(["POST"])
+# def obtain_token(request: Request):
+#     data = request.data
+#     serializer = AuthSerializer(data=data)
+#     if not serializer.is_valid():
+#         return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
+#
+#     user = authenticate(username=data.get("username"), password=data.get("password"))
+#
+#     if not user:
+#         return Response({"errors": "Unable to log in with provided credentials"}, status=status.HTTP_400_BAD_REQUEST)
+#
+#     if not user.account_verified:
+#         return Response({"errors":"Account not verified, enter your validation code"}, status=status.HTTP_403_FORBIDDEN)
+#
+#     token = Token.objects.create(user=user)
+#
+#     return Response({"token":token.key})

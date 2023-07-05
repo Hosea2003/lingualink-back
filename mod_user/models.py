@@ -61,6 +61,8 @@ class LinguaUser(AbstractUser):
             self.set_password(self.password)
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return "%s %s"%(self.username, str(self.id))
 
 class ValidationCode(models.Model):
     code = models.CharField(max_length=7)
