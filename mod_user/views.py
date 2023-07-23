@@ -15,6 +15,8 @@ from services.gmail import send_email
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from dj_rest_auth.registration.views import SocialLoginView
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view(["POST"])
@@ -55,9 +57,15 @@ def validate_account(request: Request):
     user = user_code.user_to_validate
     user.account_verified = True
     user.save()
-    user_code.delete()
+    for code in ValidationCode.objects.filter(user_to_validate=user):
+        code.delete()
 
-    return Response({"message": "account validated"}, status=status.HTTP_200_OK)
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        "refresh":str(refresh),
+        "access":str(refresh.access_token)
+    }, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -73,27 +81,51 @@ def get_validation_code(request: Request):
         return Response({"message": "user not found"}, status=status.HTTP_404_NOT_FOUND)
 
     validation = create_code(user)
-    send_email("Validation code", user.email, "To reset your password, here is your validation code {}"
+    send_email("Validation code", user.email, "Here is your validation code {}"
                .format(validation.code))
 
     return Response({"message": "validation code sent"}, status=status.HTTP_200_OK)
 
 
-# @api_view(["POST"])
-# def obtain_token(request: Request):
-#     data = request.data
-#     serializer = AuthSerializer(data=data)
-#     if not serializer.is_valid():
-#         return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
-#
-#     user = authenticate(username=data.get("username"), password=data.get("password"))
-#
-#     if not user:
-#         return Response({"errors": "Unable to log in with provided credentials"}, status=status.HTTP_400_BAD_REQUEST)
-#
-#     if not user.account_verified:
-#         return Response({"errors":"Account not verified, enter your validation code"}, status=status.HTTP_403_FORBIDDEN)
-#
-#     token = Token.objects.create(user=user)
-#
-#     return Response({"token":token.key})
+@api_view(["POST"])
+def obtain_token(request: Request):
+    data = request.data
+    serializer = AuthSerializer(data=data)
+    if not serializer.is_valid():
+        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
+
+    user = authenticate(username=data.get("username"), password=data.get("password"))
+
+    if not user:
+        return Response({"errors": "Unable to log in with provided credentials"}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.account_verified:
+        return Response({"errors":"Account not verified, enter your validation code"}, status=status.HTTP_403_FORBIDDEN)
+
+    refresh = RefreshToken.for_user(user)
+
+    return Response({
+        "refresh":str(refresh),
+        "access":str(refresh.access_token)
+    })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def get_users(request:Request):
+    search = request.query_params.get("search")
+    users = LinguaUser.objects.filter(username__icontains=search.lower())
+    return Response(LinguaUserSerializer(users, many=True).data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def get_user_email(request:Request):
+    search = request.query_params.get("search")
+    users=LinguaUser.objects.filter(email=search.lower())
+    return Response(LinguaUserSerializer(users, many=True).data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticatedOrReadOnly])
+def get_user_username(request:Request):
+    search = request.query_params.get("search")
+    users=LinguaUser.objects.filter(username=search.lower())
+    return Response(LinguaUserSerializer(users, many=True).data)

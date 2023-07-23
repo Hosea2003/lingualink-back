@@ -1,0 +1,7 @@
+from .views import StripeView, PriceView
+from django.urls import path
+
+urlpatterns=[
+    path('create-checkout-session', StripeView.as_view()),
+    path('products-list', PriceView.as_view())
+]

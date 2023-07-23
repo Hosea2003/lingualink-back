@@ -1,6 +1,7 @@
+from channels.db import database_sync_to_async
 from django.http import HttpResponse
 
-from mod_space.models import Room, RoomInvitation
+from mod_space.models import Room, RoomInvitation, RoomLanguage
 
 import json
 import os
@@ -46,3 +47,23 @@ def check_language_code(code):
         if language.get("code") == code:
             return language
     return None
+
+
+@database_sync_to_async
+def get_room_by_slug(slug, user):
+    room = Room.objects.filter(slug=slug).first()
+
+    if not room:
+        return None
+
+    if room.type_of == Room.OPEN_TO_ALL or (
+            room.host == user or RoomInvitation.objects.filter(room=room, user=user).first()
+    ):
+        return room
+
+@database_sync_to_async
+def get_language_by_code(room, language_code):
+    language= RoomLanguage.objects.filter(room=room, language_code=language_code).first()
+    if not language:
+        return None
+    return check_language_code(language_code)

@@ -69,3 +69,6 @@ class ValidationCode(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     expire_at = models.DateTimeField()
     user_to_validate = models.ForeignKey(LinguaUser, on_delete=models.CASCADE, related_name='code_validation')
+
+# class ProfilePicture(models.Model):
+#     picture = models.ImageField()

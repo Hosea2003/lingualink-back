@@ -6,5 +6,7 @@ urlpatterns = [
     path('create-room', views.create_room),
     path('insert-language/<int:pk>', views.insert_language),
     path('view-languages/<int:pk>', views.room_available_languages),
-    path('view-room/<str:slug>', views.view_room)
+    path('view-room/<str:slug>', views.view_room),
+    path('invite-people/<int:pk>', views.invite_people),
+    path('join-room', views.join_room)
 ]
